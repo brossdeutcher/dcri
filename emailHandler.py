@@ -11,7 +11,7 @@ def create_draft(text, subject, recipient, cc, attachments=False):
 
     outlook = win32.Dispatch('outlook.application')
     mail = outlook.CreateItem(0)
-    #mail.SentOnBehalfOfName = ''	## optional: change the From to a non-default address
+    mail.SentOnBehalfOfName = 'DCLIDomesticReporting@dcli.com'
     mail.To = recipient
     mail.CC = cc
     mail.Subject = subject
@@ -23,7 +23,7 @@ def create_draft(text, subject, recipient, cc, attachments=False):
     mail.Display(True)
 
 
-dfEmail = pd.read_csv(r'N:\\')	## string replaced with CSV file
+dfEmail = pd.read_csv(r'N:\ ')  ## file path in here
 print(dfEmail)  # report data displayed in console
 
 def createMail(reportNum: int):
@@ -45,8 +45,35 @@ def createMail(reportNum: int):
         ,dfEmail.loc[reportNum][2]  # cc
         ,dfEmail.loc[reportNum][5] % tuple(dateList)  # attachments
         )
-    print('createMail() to rerun')
+    print('createMail() to run a new report!')
+
+##createMail(int(input('\nEnter report number: '))) ## this can run createMail if used in console
 
 
-createMail(int(input('\nEnter report number: ')))
+## Tkinter User Interface
+
+from tkinter import *
+from functools import partial
+
+def sel():
+   selection = "You selected: " + dfEmail.loc[var.get()][0]
+   label.config(text = selection)
+   button.config(command=partial(createMail, int(var.get())))
+
+root = Tk()
+root.title('DCLI Report Email Distributions')
+var = IntVar()
+i = 0
+
+for report in range(len(dfEmail)):
+    Radiobutton(root, text=dfEmail.loc[i][0], variable=var, value=i, command=sel).pack(anchor=W)
+    i += 1
+
+label = Label(root, text=dfEmail.loc[var.get()][0])
+label.pack()
+
+button = Button(master=root, text='Run Selected Report!', command=partial(createMail, int(var.get())))
+button.pack()
+
+root.mainloop()
 
